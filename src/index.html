@@ -1,32 +1,2078 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="styles.css" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus App</title>
-        <script type="module" src="/main.js" defer></script>
-    </head>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能排谷管理系统（管理员端）</title>
+    <style>
+        /* 全局重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        /* 标签页样式 */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: #666;
+        }
+        .tab.active {
+            color: #2c3e50;
+            border-bottom: 2px solid #2c3e50;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        /* 按钮通用样式 */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        .upload-btn, .search-btn, .pai-gu-search-btn {
+            background-color: #007bff;
+            color: white;
+        }
+        .upload-btn:hover, .search-btn:hover, .pai-gu-search-btn:hover {
+            background-color: #0056b3;
+        }
+        .reset-search-btn, .pai-gu-reset-btn {
+            background-color: #6c757d;
+            color: white;
+            margin-left: 10px;
+        }
+        .reset-search-btn:hover, .pai-gu-reset-btn:hover {
+            background-color: #5a6268;
+        }
+        .export-btn {
+            background-color: #28a745;
+            color: white;
+            margin-right: 10px;
+        }
+        .export-btn:hover {
+            background-color: #218838;
+        }
+        .add-new-row-btn {
+            background-color: #17a2b8;
+            color: white;
+            margin-right: 10px;
+        }
+        .add-new-row-btn:hover {
+            background-color: #138496;
+        }
+        .clear-all-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+        .clear-all-btn:hover {
+            background-color: #c82333;
+        }
+        /* 筛选按钮样式 */
+        .filter-btn {
+            background-color: #ffc107;
+            color: #212529;
+            margin-left: 10px;
+        }
+        .filter-btn:hover {
+            background-color: #e0a800;
+        }
+        .filter-btn.active {
+            background-color: #fd7e14;
+            color: white;
+        }
+        /* 编辑页面样式 */
+        .edit-page-container {
+            margin-top: 20px;
+        }
+        .edit-tips {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        .edit-sub-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .edit-sub-tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 14px;
+            color: #666;
+        }
+        .edit-sub-tab.active {
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+        }
+        .edit-sub-panel {
+            display: none;
+        }
+        .edit-sub-panel.active {
+            display: block;
+        }
+        .edit-table-wrap {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        .edit-guzi-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .edit-guzi-table th, .edit-guzi-table td {
+            border: 1px solid #ddd;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        .edit-guzi-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .edit-guzi-table td input {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .col-select {
+            width: 50px;
+            text-align: center;
+        }
+        .col-category {
+            min-width: 120px;
+        }
+        .col-img {
+            min-width: 200px;
+        }
+        .col-price, .col-total-quantity, .col-surplus, .col-total-price {
+            width: 100px;
+            text-align: right;
+        }
+        .col-kunxu {
+            width: 80px;
+        }
+        .col-claimer {
+            min-width: 150px;
+        }
+        /* 肾表页面样式 */
+        .kidney-page-container {
+            margin-top: 20px;
+        }
+        .kidney-tips {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        .kidney-table-wrap {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        .kidney-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .kidney-table th, .kidney-table td {
+            border: 1px solid #ddd;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        .kidney-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .kidney-table tr:hover {
+            background-color: #f9f9f9;
+        }
+        .col-cn {
+            min-width: 150px;
+        }
+        .col-total-amount, .col-total-points, .col-shipping-fee {
+            width: 140px;
+            text-align: right;
+        }
+		.col-grand-total {
+            width: 250px;
+            text-align:right;
+        }
+		.col-wx-total {
+            width: 180px;
+            text-align: right;
+        }
+        .col-details {
+            width: 100px;
+            text-align: center;
+        }
+        /* 运费设置区域（使用未命名文件的样式） */
+        .shipping-area {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+        .shipping-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .shipping-title {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .shipping-input {
+            width: 150px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .shipping-info {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #e8f4f8;
+            border-radius: 4px;
+            color: #0c5460;
+            font-size: 14px;
+        }
+        /* 认领人详情弹窗 - 修改样式以匹配用户端结算单 */
+        .claimer-details-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 80vh;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+        /* 用户端结算单样式 */
+        .summary-card {
+            background-color: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .summary-card h3 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 15px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        .summary-header .img-col {
+            width: 80px;
+            text-align: center;
+        }
+        .summary-header .category-col {
+            flex: 1;
+            margin-left: 10px;
+        }
+        .summary-header .quantity-col, .summary-header .cost-col {
+            width: 120px;
+            text-align: center;
+        }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            border-bottom: 1px dashed #eee;
+            align-items: center;
+        }
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+        .summary-item .img-col {
+            width: 80px;
+            text-align: center;
+        }
+        .summary-item .img-col img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 1px solid #eee;
+        }
+        .summary-item .img-col img:hover {
+            transform: scale(1.05);
+        }
+        .summary-item .category-col {
+            flex: 1;
+            margin-left: 10px;
+        }
+        .summary-item .quantity-col, .summary-item .cost-col {
+            width: 120px;
+            text-align: center;
+        }
+        .summary-total {
+            margin-top: 15px;
+            padding: 12px 15px;
+            background-color: #e8f4f8;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 16px;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .summary-total .total-label {
+            color: #dc3545;
+        }
+        .summary-total .total-values {
+            display: flex;
+            gap: 30px;
+        }
+        /* 个人详情顶部信息 */
+        .claimer-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .info-value.total-amount {
+            color: #28a745;
+        }
+        .info-value.total-points {
+            color: #007bff;
+        }
+        .info-value.shipping-fee {
+            color: #ff9800;
+        }
+        .info-value.grand-total {
+            color: #dc3545;
+        }
+        .info-value.wx-total {
+            color: #07c160;
+        }
+        /* 图片放大弹窗 */
+        .img-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .img-modal-content {
+            max-width: 90%;
+            max-height: 90%;
+        }
+        .img-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .img-modal-close:hover {
+            color: #ddd;
+        }
+        /* 全局快速添加按钮 */
+        .quick-add-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #28a745;
+            color: white;
+            font-size: 24px;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 999;
+        }
+        .quick-add-btn:hover {
+            background-color: #218838;
+        }
+        /* 同步提示 */
+        .sync-tip {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 4px;
+            z-index: 1000;
+            display: none;
+        }
+        /* 搜索区域样式 */
+        .search-area {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+        .search-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .search-title {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .search-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+        }
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        /* 肾表筛选区域 */
+        .kidney-filter-area {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+        .kidney-filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        /* 排序按钮样式 */
+        .sort-btn {
+            position: relative;
+            padding-right: 30px;
+        }
+        .sort-btn::after {
+            content: "↓";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+        }
+        .sort-btn.asc::after {
+            content: "↑";
+        }
+        .sort-btn.desc::after {
+            content: "↓";
+        }
+        /* 打印按钮样式 */
+        .print-btn {
+            background-color: #6c757d;
+            color: white;
+            margin-left: 10px;
+        }
+        .print-btn:hover {
+            background-color: #5a6268;
+        }
+        /* 肾表统计信息样式 */
+        .search-result {
+            margin-bottom: 10px;
+            padding: 8px;
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border-radius: 4px;
+            display: block;
+        }
+        .search-result.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        /* 批量导入文本区域 */
+        .batch-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+    </style>
+    <!-- 引入SheetJS库用于Excel导出 -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- 引入jsPDF库用于生成PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <!-- 引入Gist工具库 -->
+    <script src="gist-utils.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 标签页切换（删除上传谷子标签页） -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchPage('edit-page')">编辑排谷数据</button>
+            <button class="tab" onclick="switchPage('kidney-page')">肾表</button>
+        </div>
 
-    <body>
-        <main class="container">
-            <h1>Welcome to PakePlus</h1>
-            <form class="row" id="greet-form">
-                <input id="inputValue" placeholder="Enter a something..." />
-            </form>
-            <div class="resultBox">
-                <span>result: </span>
-                <span id="result"></span>
+        <!-- 编辑排谷数据页面 -->
+        <div id="edit-page" class="page active">
+            <div class="edit-page-container">
+                <h2>编辑排谷数据</h2>
+               
+                <div class="edit-sub-tabs">
+                    <button class="edit-sub-tab active" onclick="switchEditSubTab('table-edit')">表格编辑</button>
+                    <button class="edit-sub-tab" onclick="switchEditSubTab('batch-claim')">批量认领导入</button>
+                </div>
+                <div id="table-edit-panel" class="edit-sub-panel active">
+					 <div class="edit-tips">
+                    <h3>💡 操作提示：</h3>
+						 1. 点击单元格可直接编辑；<br>
+						 2. 支持从Excel复制内容直接粘贴到表格；<br>
+						 3. 品类总价会根据单价和总数量自动计算；<br>
+						 4. 剩余数量会根据排的人CN数量自动计算；<br>
+						 5. 排的人CN支持编辑（多个名字用顿号分隔）；<br>
+						 6. 所有修改会自动同步到云端；<br>
+						 7. 可删除单行数据或清空所有数据
+					</div>
+                    <!-- 搜索区域 -->
+                    <div class="search-area">
+                        <div class="search-row">
+                            <div class="search-title">🔍 表格搜索：</div>
+                            <input type="text" id="tableSearchInput" class="search-input" placeholder="输入关键词搜索...">
+                            <select id="searchColumn" class="search-select">
+                                <option value="all">全部字段</option>
+                                <option value="category">品类</option>
+                                <option value="price">单价</option>
+                                <option value="totalQuantity">总数量</option>
+                                <option value="surplus">剩余数量</option>
+                                <option value="kunxu">捆序</option>
+                                <option value="claimer">认领人</option>
+                            </select>
+                            <button class="btn search-btn" onclick="filterTable()">搜索</button>
+                            <button class="btn reset-search-btn" onclick="resetTableFilter()">重置</button>
+                        </div>
+                        <div class="filter-buttons">
+                            <button class="btn filter-btn" onclick="filterByStock('has')">有库存(&gt;0)</button>
+                            <button class="btn filter-btn" onclick="filterByStock('zero')">无库存(0)</button>
+                            <button class="btn filter-btn" onclick="filterByKunxu('有捆序')">有捆序</button>
+                            <button class="btn filter-btn" onclick="filterByKunxu('不捆')">无捆序</button>
+                            <button class="btn filter-btn" onclick="filterByClaimer('有认领')">有认领人</button>
+                            <button class="btn filter-btn" onclick="filterByClaimer('无认领')">无认领人</button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn export-btn" onclick="exportGuziDataToExcel()">导出排谷数据为Excel</button>
+                    <button class="btn add-new-row-btn" onclick="addNewEditRow()">新增一行</button>
+                    <button class="btn clear-all-btn" onclick="clearAllGuziDataWithExport()">清空所有数据</button>
+                    <div class="edit-table-wrap">
+                        <table id="edit-guzi-table" class="edit-guzi-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-select"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" disabled></th>
+                                    <th class="col-category">品类</th>
+                                    <th class="col-img">谷子图片URL</th>
+                                    <th class="col-price">单价</th>
+                                    <th class="col-total-quantity">总数量</th>
+                                    <th class="col-surplus">剩余数量</th>
+                                    <th class="col-total-price">品类总价</th>
+                                    <th class="col-kunxu">捆序</th>
+                                    <th class="col-claimer">排的人CN</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="edit-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- 批量认领导入面板 -->
+                <div id="batch-claim-panel" class="edit-sub-panel">
+                    <div class="pai-gu-batch-container">
+                        <h3 style="margin-bottom: 10px; color: #2c3e50; font-size: 16px;">批量导入排谷认领数据</h3>
+                        
+                        <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                            <div style="font-weight: 500; margin-bottom: 8px;">📌 推荐导入方式：</div>
+                            <ol style="margin-left: 20px; line-height: 1.6; color: #666;">
+                                <li>先导出Excel模板 → 填写数据 → 复制Excel内容粘贴到下方文本框</li>
+                                <li>支持两种分隔符：<strong>制表符（Excel默认）</strong> 或 <strong>逗号/竖线（|）</strong></li>
+                                <li>列顺序：品类,单价,总数量,品类总价,捆序,排的人CN,图片URL（剩余数量会自动计算）</li>
+                            </ol>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                            <label style="font-weight: 500;">分隔符类型：</label>
+                            <select id="delimiterType" class="btn" style="padding: 6px 12px;">
+                                <option value="tab">制表符（Excel复制）</option>
+                                <option value="comma">逗号（,）</option>
+                                <option value="pipe">竖线（|）</option>
+                            </select>
+                        </div>
+                        
+                        <textarea class="batch-textarea" id="paiGuBatchData" placeholder="请粘贴数据（支持Excel复制/手动输入）
+示例1（制表符）：徽章A	15	5	75	捆1	张三、李四	https://xxx.jpg
+示例2（逗号）：徽章B,35.5,10,355,不捆,王五,
+示例3（竖线）：挂件C|20|8|160|不捆||"></textarea>
+                        
+                        <div id="importPreview" style="margin: 15px 0; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; display: none;">
+                            <div style="background: #e9ecef; padding: 8px 12px; font-weight: 500; border-bottom: 1px solid #ddd;">
+                                导入预览（点击行可查看详情）
+                            </div>
+                            <div id="previewTable"></div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn upload-btn" onclick="previewImportData()">📋 预览数据</button>
+                            <button class="btn export-btn" onclick="exportImportTemplate()">📥 下载导入模板</button>
+                            <button class="btn" style="background: #28a745; color: white;" onclick="confirmImportData()">✅ 确认导入</button>
+                            <button class="btn reset-search-btn" onclick="clearImportData()">🗑️ 清空内容</button>
+                        </div>
+                        
+                        <div id="importErrorTips" style="margin-top: 15px; padding: 10px; border-radius: 6px; display: none;"></div>
+                    </div>
+                </div>
             </div>
-            <div class="invokeBox">
-                <button id="openUrl">open_url_browser</button>
-                <button id="openUrlNew">open_url_new</button>
-                <button id="runCommand">run_command</button>
-                <button id="downloadFile">download_file</button>
-                <button id="getExeDir">get_exe_dir</button>
-                <button id="getEnvVar">get_env_var</button>
-                <button id="findPort">find_port</button>
+        </div>
+
+        <!-- 肾表页面（标签页名称修改，运费设置区域改为未命名文件样式） -->
+        <div id="kidney-page" class="page">
+            <div class="kidney-page-container">
+                <h2>肾表</h2>
+				<button class="btn export-btn" onclick="exportAllKidneyData()">导出总肾表及个人结算单</button>
+                <div class="kidney-tips">
+                    <h3>💡 操作提示：</h3>
+                    1. 肾表自动根据排谷数据生成；<br>
+                    2. 点击"详情"可查看认领人具体排谷清单；<br>
+                    3. 点击"打印小票"可生成样式一致的PDF小票；<br>
+                    4. 运费支持手动设置，会自动均摊到每个认领人；<br>
+                    5. 可按金额/点数/CN排序
+                </div>
+                
+                <!-- 运费设置区域（改为未命名文件样式） -->
+                <div class="shipping-area">
+                    <div class="shipping-row">
+                        <div class="shipping-title">📦 运费设置：</div>
+                        <input type="number" id="totalShippingFee" class="shipping-input" placeholder="总运费（元）" step="0.01" min="0">
+                        <button class="btn upload-btn" onclick="calculateShippingFee()">计算均摊运费</button>
+                    </div>
+                    <div class="shipping-info" id="shippingInfo">当前未设置运费，每个人的运费为0元。</div>
+                </div>
+                
+                <!-- 肾表筛选区域 -->
+                <div class="kidney-filter-area">
+                    <div class="search-row">
+                        <div class="search-title">🔍搜索特定cn</div>
+                        <input type="text" id="kidneySearchInput" class="search-input" placeholder="搜索CN..." onkeyup="filterKidneyTable()">
+                    </div>
+                    <div class="kidney-filter-buttons">
+						<h3>📊 筛选排序：</h3>
+                        <button class="btn filter-btn sort-btn" onclick="sortKidneyTable('grandTotal')" data-sort="grandTotal" data-order="desc">按总金额排序</button>
+                        <button class="btn filter-btn sort-btn" onclick="sortKidneyTable('totalAmount')" data-sort="totalAmount" data-order="desc">按谷子金额排序</button>
+                        <button class="btn filter-btn sort-btn" onclick="sortKidneyTable('totalPoints')" data-sort="totalPoints" data-order="desc">按点数排序</button>
+                        <button class="btn filter-btn sort-btn" onclick="sortKidneyTable('cn')" data-sort="cn" data-order="asc">按CN排序</button>
+                    </div>
+                </div>
+                
+                <!-- 肾表统计信息（修复样式） -->
+                <div class="search-result" id="kidneyStats" style="display: block;">
+                    统计人数：<span id="claimerCount">0</span> 人 | 总排谷金额：<span id="totalAmountAll">0</span> 元 | 总谷子点数：<span id="totalPointsAll">0</span> 点 | 总均摊运费：<span id="totalShippingAll">0</span> 元 | 总金额（谷子+运费）：<span id="grandTotalAll">0</span> 元 
+                </div>
+                
+                <!-- 肾表表格（删除wx支付总金额列） -->
+                <div class="kidney-table-wrap">
+                    <table id="kidney-table" class="kidney-table">
+                        <thead>
+                            <tr>
+                                <th class="col-cn">CN</th>
+                                <th class="col-total-amount">排谷金额（元）</th>
+                                <th class="col-total-points">排谷点数</th>
+                                <th class="col-shipping-fee">均摊运费（元）</th>
+                                <th class="col-grand-total">总金额（谷子+均摊运费）</th>
+								<th class="col-wx-total">wx支付总金额（元）</th>
+                                <th class="col-details">详情</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kidney-table-body">
+                            <!-- 肾表数据将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </main>
-    </body>
+        </div>
+    </div>
+
+    <!-- 认领人详情弹窗（修改为类似用户端结算单样式） -->
+    <div id="claimer-details-modal" class="claimer-details-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">认领人详情</div>
+                <button class="modal-close" onclick="closeClaimerDetailsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- 顶部信息 -->
+                <div class="claimer-info" id="claimer-summary">
+                    <!-- 汇总信息将通过JavaScript动态生成 -->
+                </div>
+                
+                <!-- 结算单样式内容 -->
+                <div id="claimer-details-content">
+                    <!-- 详细谷子列表将通过JavaScript动态生成 -->
+                </div>
+                
+                <!-- 按钮区域 -->
+                <div id="claimer-buttons" style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="btn export-btn" onclick="exportIndividualClaimerFile(currentClaimer)">导出个人结算单</button>
+                   
+                </div>
+
+            </div>
+        </div>
+    </div>
+    
+    <!-- 图片放大弹窗 -->
+    <div class="img-modal" id="imgModal">
+        <span class="img-modal-close" onclick="closeImgModal()">&times;</span>
+        <img class="img-modal-content" id="modalImg">
+    </div>
+
+    <!-- 全局快速添加按钮 -->
+    <button class="quick-add-btn" onclick="quickAddGuzi()">+</button>
+    
+    <!-- 同步提示 -->
+    <div class="sync-tip" id="syncTip">数据已同步到云端！</div>
+    
+    <script>
+        // ==================== 全局变量 ====================
+        let guziData = [];          
+        let claimRecords = [];      
+        const defaultImgUrl = "https://via.placeholder.com/180";
+        let importPreviewData = []; // 导入预览数据缓存
+        let importErrors = [];      // 导入错误信息
+        let kidneyData = [];        // 肾表数据
+        let originalKidneyData = []; // 原始肾表数据（用于筛选恢复）
+        let shippingFee = 0;        // 运费总金额
+        let feePerPoint = 0;        // 每点均摊运费
+        let sortState = {           // 排序状态
+            grandTotal: { order: 'desc', name: '总金额' },
+            totalAmount: { order: 'desc', name: '谷子金额' },
+            totalPoints: { order: 'desc', name: '点数' },
+            cn: { order: 'asc', name: 'CN' }
+        };
+        let currentClaimer = '';    // 当前查看的认领人
+        let currentClaimerData = null; // 当前认领人数据
+
+        // ==================== 辅助函数：计算剩余数量 ====================
+        function calculateSurplus(totalQuantity, claimers) {
+            const claimerCount = claimers ? claimers.length : 0;
+            const surplus = totalQuantity - claimerCount;
+            return Math.max(surplus, 0); // 确保不为负数
+        }
+
+        // ==================== 页面初始化 ====================
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 从Gist加载数据
+            const data = await fetchGuziDataFromGist();
+            guziData = data.guziData;
+            claimRecords = data.claimRecords;
+            
+            // 确保所有数据都有正确的剩余数量
+            guziData.forEach((item, index) => {
+                updateGuziStock(index);
+            });
+            
+            initEditPageData();
+            
+            // 添加搜索框回车事件
+            const searchInput = document.getElementById('tableSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        filterTable();
+                    }
+                });
+            }
+            
+            // 添加肾表搜索框回车事件
+            const kidneySearchInput = document.getElementById('kidneySearchInput');
+            if (kidneySearchInput) {
+                kidneySearchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        filterKidneyTable();
+                    }
+                });
+            }
+            
+            // 初始化运费提示
+            document.getElementById('shippingInfo').textContent = '当前未设置运费，每个人的运费为0元。';
+            
+            // 初始化肾表数据
+            updateKidneyData();
+        });
+
+        // ==================== 数据同步函数（替换原本地存储） ====================
+        function saveDataToLocalStorage() {
+            // 替换为同步到Gist
+            syncGuziDataToGist(guziData, claimRecords);
+            showSyncTip();
+            
+            // 更新肾表数据
+            updateKidneyData();
+        }
+
+        function clearLocalStorageData() {
+            try {
+                // 清空Gist数据
+                syncGuziDataToGist([], []);
+                guziData = [];
+                claimRecords = [];
+                initEditPageData();
+                updateKidneyData();
+                alert("所有数据已清空！");
+            } catch (error) {
+                console.error("❌ 清空云端数据异常：", error);
+                alert("清空数据失败！");
+            }
+        }
+
+        // ==================== 辅助函数 ====================
+        function showSyncTip() {
+            const tip = document.getElementById('syncTip');
+            tip.style.display = "block";
+            setTimeout(() => tip.style.display = "none", 2000);
+        }
+
+        // ==================== 运费和手续费计算函数（修复版） ====================
+        // 进一法计算：如果小数点后第三位>0，则向上取整到分
+        function roundUpToCent(amount) {
+            if (amount <= 0) return 0;
+            
+            // 将金额乘以100得到分
+            const cents = amount * 100;
+            
+            // 如果小数点后有数字（即不是整数分），则向上取整
+            if (Math.abs(cents - Math.floor(cents)) > 0.0001) {
+                return Math.ceil(cents) / 100;
+            }
+            
+            // 否则返回原值
+            return Math.floor(cents) / 100;
+        }
+
+        // wx手续费计算：0.1%，不足100元的收取0.1元，然后应用进一法
+        function calculateWxFee(amount) {
+            if (amount <= 0) return 0;
+            
+            // 计算手续费
+            let fee;
+            if (amount < 100) {
+                fee = 0.1; // 不足100元，收取0.1元
+            } else {
+                fee = amount * 0.001; // 0.1%手续费
+            }
+            
+            // 应用进一法
+            return roundUpToCent(fee);
+        }
+
+        function calculateWxTotal(amount) {
+            const fee = calculateWxFee(amount);
+            return amount + fee;
+        }
+
+        // 计算每个人的均摊运费（应用进一法）
+        function calculateShippingFeePerPerson(points) {
+            if (points <= 0 || shippingFee <= 0 || feePerPoint <= 0) return 0;
+            
+            const rawFee = points * feePerPoint;
+            return roundUpToCent(rawFee);
+        }
+
+        // ==================== 图片放大功能 ====================
+        function openImgModal(imgUrl) {
+            const modal = document.getElementById('imgModal');
+            const modalImg = document.getElementById('modalImg');
+            modal.style.display = "flex";
+            modalImg.src = imgUrl;
+        }
+
+        function closeImgModal() {
+            document.getElementById('imgModal').style.display = "none";
+        }
+
+        // ==================== 页面切换函数 ====================
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            event.target.classList.add('active');
+            
+            // 切换到肾表页面时更新数据
+            if (pageId === 'kidney-page') {
+                updateKidneyData();
+            }
+        }
+
+        function switchEditSubTab(tabType) {
+            document.querySelectorAll('.edit-sub-panel').forEach(panel => panel.classList.remove('active'));
+            document.querySelectorAll('.edit-sub-tab').forEach(tab => tab.classList.remove('active'));
+            
+            if (tabType === 'table-edit') {
+                document.getElementById('table-edit-panel').classList.add('active');
+            } else {
+                document.getElementById('batch-claim-panel').classList.add('active');
+            }
+            event.target.classList.add('active');
+        }
+
+        // ==================== 编辑页面核心功能（修复剩余数量bug，保持搜索筛选状态） ====================
+        function initEditPageData() {
+            const tableBody = document.getElementById('edit-table-body');
+            tableBody.innerHTML = '';
+            
+            guziData.forEach((item, index) => {
+                // 计算剩余数量
+                const claimers = item.claimers || [];
+                const surplus = calculateSurplus(item.totalQuantity, claimers);
+                const claimersStr = claimers.join('、') || '';
+                const totalPrice = (item.price * item.totalQuantity).toFixed(2);
+                
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-index', index);
+                tr.innerHTML = `
+                    <td class="col-select"><input type="checkbox" class="row-checkbox" data-index="${index}"></td>
+                    <td class="col-category" contenteditable="true" onblur="updateGuziData(${index}, 'category', this.innerText)">${item.category}</td>
+                    <td class="col-img" contenteditable="true" onblur="updateGuziData(${index}, 'imgSrc', this.innerText)">${item.imgSrc || defaultImgUrl}</td>
+                    <td class="col-price" contenteditable="true" onblur="updateGuziData(${index}, 'price', parseFloat(this.innerText) || 0)">${item.price}</td>
+                    <td class="col-total-quantity" contenteditable="true" onblur="updateGuziData(${index}, 'totalQuantity', parseInt(this.innerText) || 1)">${item.totalQuantity}</td>
+                    <td class="col-surplus">${surplus}</td>
+                    <td class="col-total-price">${totalPrice}</td>
+                    <td class="col-kunxu" contenteditable="true" onblur="updateGuziData(${index}, 'kunxu', this.innerText)">${item.kunxu || '不捆'}</td>
+                    <td class="col-claimer" contenteditable="true" onblur="updateClaimers(${index}, this.innerText)">${claimersStr}</td>
+                    <td><button class="btn clear-all-btn" onclick="deleteGuziRow(${index})">删除</button></td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            
+            document.getElementById('selectAllCheckbox').disabled = guziData.length === 0;
+            // 不再在此处调用updateKidneyData，因为saveDataToLocalStorage会调用
+        }
+
+        function updateGuziData(index, key, value) {
+            if (value === undefined || value === null) return;
+            
+            // 保存原始值用于回滚
+            const originalValue = guziData[index][key];
+            
+            // 处理不同类型的数据
+            let processedValue = value;
+            if (key === 'price') {
+                processedValue = parseFloat(value) || 0;
+            } else if (key === 'totalQuantity') {
+                processedValue = parseInt(value) || 1;
+                
+                // 检查修改总数量后剩余数量是否会为负数
+                const claimers = guziData[index].claimers || [];
+                const newSurplus = calculateSurplus(processedValue, claimers);
+                
+                if (newSurplus < 0) {
+                    alert(`错误：总数量不能小于已认领数量！\n当前已认领：${claimers.length}个`);
+                    // 恢复原始值
+                    document.querySelector(`#edit-table-body tr[data-index="${index}"] .col-${key === 'totalQuantity' ? 'total-quantity' : key}`).innerText = originalValue;
+                    return;
+                }
+            }
+            
+            guziData[index][key] = processedValue;
+            
+            // 自动计算总价
+            guziData[index].totalPrice = (guziData[index].price * guziData[index].totalQuantity).toFixed(2);
+            
+            // 更新剩余数量
+            updateGuziStock(index);
+            
+            // 更新当前行的显示数据，而不是重新渲染整个表格
+            updateRowDisplay(index);
+            
+            saveDataToLocalStorage();
+        }
+
+        // 更新单行显示数据
+        function updateRowDisplay(index) {
+            const item = guziData[index];
+            const row = document.querySelector(`#edit-table-body tr[data-index="${index}"]`);
+            if (!row) return;
+            
+            const claimers = item.claimers || [];
+            const surplus = calculateSurplus(item.totalQuantity, claimers);
+            const claimersStr = claimers.join('、') || '';
+            const totalPrice = (item.price * item.totalQuantity).toFixed(2);
+            
+            row.querySelector('.col-category').innerText = item.category;
+            row.querySelector('.col-img').innerText = item.imgSrc || defaultImgUrl;
+            row.querySelector('.col-price').innerText = item.price;
+            row.querySelector('.col-total-quantity').innerText = item.totalQuantity;
+            row.querySelector('.col-surplus').innerText = surplus;
+            row.querySelector('.col-total-price').innerText = totalPrice;
+            row.querySelector('.col-kunxu').innerText = item.kunxu || '不捆';
+            row.querySelector('.col-claimer').innerText = claimersStr;
+        }
+
+        function updateGuziStock(index) {
+            const item = guziData[index];
+            const claimers = item.claimers || [];
+            const surplus = calculateSurplus(item.totalQuantity, claimers);
+            item.stock = surplus;
+        }
+
+        function updateClaimers(index, claimersStr) {
+            const claimers = claimersStr ? claimersStr.split('、').map(name => name.trim()).filter(name => name) : [];
+            
+            // 检查认领人数是否会超过总数量
+            const totalQuantity = guziData[index].totalQuantity;
+            if (claimers.length > totalQuantity) {
+                alert(`错误：认领人数不能超过总数量！\n总数量：${totalQuantity}，认领人数：${claimers.length}`);
+                // 恢复原始认领人
+                const originalClaimersStr = (guziData[index].claimers || []).join('、');
+                document.querySelector(`#edit-table-body tr[data-index="${index}"] .col-claimer`).innerText = originalClaimersStr;
+                return;
+            }
+            
+            guziData[index].claimers = claimers;
+            
+            // 更新剩余数量
+            updateGuziStock(index);
+            
+            // 更新当前行的显示
+            updateRowDisplay(index);
+            
+            saveDataToLocalStorage();
+        }
+
+        function deleteGuziRow(index) {
+            if (confirm('确定要删除这行数据吗？')) {
+                guziData.splice(index, 1);
+                saveDataToLocalStorage();
+                // 重新渲染整个表格，因为索引发生了变化
+                initEditPageData();
+            }
+        }
+
+        function addNewEditRow() {
+            guziData.push({
+                category: '新增品类',
+                price: 0,
+                totalQuantity: 1,
+                kunxu: '不捆',
+                imgSrc: defaultImgUrl,
+                claimers: [],
+                stock: 1
+            });
+            saveDataToLocalStorage();
+            initEditPageData();
+        }
+
+        function toggleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => cb.checked = checkbox.checked);
+        }
+
+        function clearAllGuziDataWithExport() {
+            if (confirm('确定要清空所有数据吗？清空前建议先导出数据！')) {
+                exportGuziDataToExcel(); // 先导出
+                clearLocalStorageData(); // 清空Gist数据
+            }
+        }
+
+        // ==================== 导出排谷数据（不包含剩余数量列） ====================
+        function exportGuziDataToExcel() {
+            // 准备数据，不包含剩余数量列
+            const wsData = guziData.map(item => [
+                item.category,
+                item.price,
+                item.totalQuantity,
+                (item.price * item.totalQuantity).toFixed(2),
+                item.kunxu || '不捆',
+                (item.claimers || []).join('、'),
+                item.imgSrc || defaultImgUrl
+            ]);
+            
+            wsData.unshift(['品类', '单价', '总数量', '品类总价', '捆序', '排的人CN', '图片URL']);
+            
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '排谷数据');
+            XLSX.writeFile(wb, `排谷数据_${new Date().toLocaleDateString()}.xlsx`);
+        }
+
+        // ==================== 表格搜索功能（修复版，保持筛选状态） ====================
+        function filterTable() {
+            const searchInput = document.getElementById('tableSearchInput');
+            const searchColumn = document.getElementById('searchColumn').value;
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            
+            const rows = document.querySelectorAll('#edit-table-body tr');
+            
+            rows.forEach(row => {
+                let shouldShow = false;
+                
+                if (!searchTerm) {
+                    // 如果搜索词为空，显示所有行
+                    shouldShow = true;
+                } else {
+                    if (searchColumn === 'all') {
+                        // 搜索所有字段
+                        const cells = row.querySelectorAll('td');
+                        for (let cell of cells) {
+                            if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                                shouldShow = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        // 搜索特定列
+                        let cell;
+                        switch(searchColumn) {
+                            case 'category':
+                                cell = row.querySelector('.col-category');
+                                break;
+                            case 'price':
+                                cell = row.querySelector('.col-price');
+                                break;
+                            case 'totalQuantity':
+                                cell = row.querySelector('.col-total-quantity');
+                                break;
+                            case 'surplus':
+                                cell = row.querySelector('.col-surplus');
+                                break;
+                            case 'kunxu':
+                                cell = row.querySelector('.col-kunxu');
+                                break;
+                            case 'claimer':
+                                cell = row.querySelector('.col-claimer');
+                                break;
+                        }
+                        
+                        if (cell && cell.textContent.toLowerCase().includes(searchTerm)) {
+                            shouldShow = true;
+                        }
+                    }
+                }
+                
+                if (shouldShow) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // 更新筛选按钮状态
+            updateFilterButtons();
+        }
+
+        function resetTableFilter() {
+            document.getElementById('tableSearchInput').value = '';
+            document.getElementById('searchColumn').value = 'all';
+            
+            const rows = document.querySelectorAll('#edit-table-body tr');
+            rows.forEach(row => {
+                row.style.display = '';
+            });
+            
+            // 重置所有筛选按钮的激活状态
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+
+        // 快捷筛选功能
+        function filterByStock(type) {
+            const rows = document.querySelectorAll('#edit-table-body tr');
+            
+            rows.forEach(row => {
+                const surplusCell = row.querySelector('.col-surplus');
+                const surplus = parseInt(surplusCell.textContent) || 0;
+                let shouldShow = false;
+                
+                // 修改：将低库存(<5)改为有库存(>0)
+                if (type === 'has' && surplus > 0) {
+                    shouldShow = true;
+                } else if (type === 'zero' && surplus === 0) {
+                    shouldShow = true;
+                }
+                
+                if (shouldShow) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            updateFilterButtonState('filterByStock', type);
+        }
+
+        function filterByKunxu(type) {
+            const rows = document.querySelectorAll('#edit-table-body tr');
+            
+            rows.forEach(row => {
+                const kunxuCell = row.querySelector('.col-kunxu');
+                const kunxu = kunxuCell.textContent.trim();
+                let shouldShow = false;
+                
+                if (type === '有捆序' && kunxu !== '不捆' && kunxu !== '') {
+                    shouldShow = true;
+                } else if (type === '不捆' && (kunxu === '不捆' || kunxu === '')) {
+                    shouldShow = true;
+                }
+                
+                if (shouldShow) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            updateFilterButtonState('filterByKunxu', type);
+        }
+
+        function filterByClaimer(type) {
+            const rows = document.querySelectorAll('#edit-table-body tr');
+            
+            rows.forEach(row => {
+                const claimerCell = row.querySelector('.col-claimer');
+                const claimer = claimerCell.textContent.trim();
+                let shouldShow = false;
+                
+                if (type === '有认领' && claimer !== '') {
+                    shouldShow = true;
+                } else if (type === '无认领' && claimer === '') {
+                    shouldShow = true;
+                }
+                
+                if (shouldShow) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            updateFilterButtonState('filterByClaimer', type);
+        }
+
+        // 辅助函数
+        function updateFilterButtonState(filterType, value) {
+            // 先重置所有筛选按钮
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 激活当前点击的按钮
+            event.target.classList.add('active');
+        }
+
+        function updateFilterButtons() {
+            // 当使用普通搜索时，重置筛选按钮状态
+            const searchTerm = document.getElementById('tableSearchInput').value.trim();
+            if (searchTerm) {
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+            }
+        }
+
+        // ==================== 批量导入排谷数据（修复剩余数量计算） ====================
+        function previewImportData() {
+            const data = document.getElementById('paiGuBatchData').value.trim();
+            if (!data) {
+                alert('请先粘贴导入数据！');
+                return;
+            }
+            
+            importErrors = [];
+            importPreviewData = [];
+            const delimiter = document.getElementById('delimiterType').value;
+            const lines = data.split('\n');
+            
+            lines.forEach((line, lineNum) => {
+                if (!line.trim()) return;
+                let parts = [];
+                switch(delimiter) {
+                    case 'tab': parts = line.split('\t').map(p => p.trim()); break;
+                    case 'comma': parts = line.split(',').map(p => p.trim()); break;
+                    case 'pipe': parts = line.split('|').map(p => p.trim()); break;
+                }
+                
+                // 现在应该是7列（不包含剩余数量）
+                if (parts.length < 6) {
+                    importErrors.push(`第${lineNum+1}行：列数不足（至少6列，当前${parts.length}列）`);
+                    return;
+                }
+                
+                // 解析数据，第7列是图片URL（可选）
+                const [category, price, totalQuantity, totalPrice, kunxu, claimersStr, imgUrl] = parts;
+                
+                if (isNaN(parseFloat(price)) || isNaN(parseInt(totalQuantity))) {
+                    importErrors.push(`第${lineNum+1}行：单价/总数量必须为数字`);
+                    return;
+                }
+                
+                // 处理认领人
+                const claimers = claimersStr ? claimersStr.split('、').map(n => n.trim()).filter(n => n) : [];
+                
+                // 计算剩余数量
+                const totalQty = parseInt(totalQuantity) || 1;
+                const surplus = calculateSurplus(totalQty, claimers);
+                
+                // 检查认领人数是否会超过总数量
+                if (claimers.length > totalQty) {
+                    importErrors.push(`第${lineNum+1}行：认领人数(${claimers.length})超过总数量(${totalQty})`);
+                    return;
+                }
+                
+                importPreviewData.push({
+                    category,
+                    price: parseFloat(price) || 0,
+                    totalQuantity: totalQty,
+                    totalPrice: parseFloat(totalPrice) || (parseFloat(price) * totalQty),
+                    kunxu: kunxu || '不捆',
+                    claimers: claimers,
+                    imgSrc: imgUrl || defaultImgUrl,
+                    stock: surplus
+                });
+            });
+            
+            // 渲染预览
+            const previewEl = document.getElementById('importPreview');
+            const previewTableEl = document.getElementById('previewTable');
+            previewTableEl.innerHTML = '';
+            
+            if (importErrors.length > 0) {
+                document.getElementById('importErrorTips').style.display = 'block';
+                document.getElementById('importErrorTips').style.backgroundColor = '#f8d7da';
+                document.getElementById('importErrorTips').style.color = '#721c24';
+                document.getElementById('importErrorTips').innerText = `导入错误：\n${importErrors.join('\n')}`;
+            } else {
+                document.getElementById('importErrorTips').style.display = 'none';
+            }
+            
+            importPreviewData.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.style.padding = '8px 12px';
+                div.style.borderBottom = '1px solid #eee';
+                div.innerHTML = `
+                    <div><strong>品类：</strong>${item.category}</div>
+                    <div><strong>单价：</strong>${item.price} 元 | <strong>总数量：</strong>${item.totalQuantity} | <strong>剩余：</strong>${item.stock}（自动计算）</div>
+                    <div><strong>捆序：</strong>${item.kunxu} | <strong>认领人：</strong>${item.claimers.join('、') || '无'}</div>
+                `;
+                previewTableEl.appendChild(div);
+            });
+            
+            previewEl.style.display = 'block';
+        }
+
+        function exportImportTemplate() {
+            // 导出模板Excel（不包含剩余数量列）
+            const templateData = [
+                ['品类', '单价', '总数量', '品类总价', '捆序', '排的人CN', '图片URL'],
+                ['徽章示例', '15', '10', '150', '捆1', '张三、李四', 'https://via.placeholder.com/180'],
+                ['立牌示例', '35.5', '5', '177.5', '不捆', '', '']
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(templateData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '导入模板');
+            XLSX.writeFile(wb, '排谷数据导入模板.xlsx');
+        }
+
+        function confirmImportData() {
+            if (importPreviewData.length === 0) {
+                alert('暂无预览数据，请先预览！');
+                return;
+            }
+            
+            if (importErrors.length > 0) {
+                alert(`存在导入错误，无法导入：\n${importErrors.join('\n')}`);
+                return;
+            }
+            
+            if (confirm(`确认导入${importPreviewData.length}条数据吗？已存在的品类将被覆盖！`)) {
+                // 合并数据（覆盖已有品类，新增不存在的）
+                importPreviewData.forEach(importItem => {
+                    const existingIndex = guziData.findIndex(item => item.category === importItem.category);
+                    if (existingIndex >= 0) {
+                        guziData[existingIndex] = importItem;
+                    } else {
+                        guziData.push(importItem);
+                    }
+                });
+                
+                saveDataToLocalStorage();
+                initEditPageData();
+                alert(`成功导入${importPreviewData.length}条数据！`);
+                document.getElementById('paiGuBatchData').value = '';
+                document.getElementById('importPreview').style.display = 'none';
+            }
+        }
+
+        function clearImportData() {
+            document.getElementById('paiGuBatchData').value = '';
+            document.getElementById('importPreview').style.display = 'none';
+            document.getElementById('importErrorTips').style.display = 'none';
+            importPreviewData = [];
+            importErrors = [];
+        }
+
+        // ==================== 肾表功能 ====================
+        // 计算均摊运费（使用未命名文件样式，但保持v11的计算逻辑）
+        function calculateShippingFee() {
+            const input = document.getElementById('totalShippingFee');
+            const inputValue = parseFloat(input.value);
+
+            // 如果输入是NaN，则视为0（即不输入运费）
+            if (isNaN(inputValue)) {
+                shippingFee = 0;
+            } else if (inputValue < 0) {
+                alert('运费不能小于0！');
+                return;
+            } else {
+                shippingFee = inputValue;
+            }
+
+            // 更新肾表数据（重新计算均摊运费）
+            updateKidneyData();
+
+            // 更新提示信息
+            const totalPointsAll = kidneyData.reduce((sum, item) => sum + item.totalPoints, 0);
+            if (totalPointsAll > 0 && shippingFee > 0) {
+                feePerPoint = shippingFee / totalPointsAll;
+                document.getElementById('shippingInfo').textContent = 
+                    `总运费 ${shippingFee.toFixed(2)} 元，已按点数均摊到 ${kidneyData.length} 位认领人，每点均摊运费：${feePerPoint.toFixed(4)} 元/点`;
+            } else {
+                feePerPoint = 0;
+                if (shippingFee > 0) {
+                    // 如果运费大于0，但总点数为0，则提示没有认领人，无法均摊
+                    document.getElementById('shippingInfo').textContent = `总运费 ${shippingFee.toFixed(2)} 元，但目前没有认领人，无法均摊运费。`;
+                } else {
+                    document.getElementById('shippingInfo').textContent = `当前未设置运费，每个人的运费为0元。`;
+                }
+            }
+        }
+
+        function updateKidneyData() {
+            // 清空现有肾表数据
+            kidneyData = [];
+            
+            // 统计每个CN的认领情况
+            const claimerStats = {};
+            
+            // 遍历所有谷子数据
+            guziData.forEach(item => {
+                const { category, price, kunxu, imgSrc } = item;
+                
+                // 遍历该谷子的认领人
+                item.claimers.forEach(claimer => {
+                    if (!claimer || claimer.trim() === '') return;
+                    
+                    const cn = claimer.trim();
+                    
+                    // 初始化该CN的统计信息
+                    if (!claimerStats[cn]) {
+                        claimerStats[cn] = {
+                            cn: cn,
+                            totalAmount: 0,
+                            totalPoints: 0,
+                            details: [] // 存储每个谷子的详细信息
+                        };
+                    }
+                    
+                    // 更新统计信息
+                    claimerStats[cn].totalAmount += price;
+                    claimerStats[cn].totalPoints += 1;
+                    
+                    // 检查是否已经存在该品类的记录
+                    const existingDetail = claimerStats[cn].details.find(d => d.category === category && d.price === price);
+                    if (existingDetail) {
+                        existingDetail.quantity += 1;
+                        existingDetail.cost = existingDetail.quantity * price;
+                    } else {
+                        claimerStats[cn].details.push({
+                            category: category,
+                            price: price,
+                            quantity: 1,
+                            cost: price,
+                            imgSrc: imgSrc || defaultImgUrl,
+                            kunxu: kunxu
+                        });
+                    }
+                });
+            });
+            
+            // 计算总点数和每点均摊运费
+            const totalPointsAll = Object.values(claimerStats).reduce((sum, item) => sum + item.totalPoints, 0);
+            
+            if (totalPointsAll > 0 && shippingFee > 0) {
+                feePerPoint = shippingFee / totalPointsAll;
+            } else {
+                feePerPoint = 0;
+            }
+            
+            // 转换为数组并计算均摊运费、总金额和wx支付总金额
+            kidneyData = Object.values(claimerStats).map(item => {
+                const shippingFeeForClaimer = calculateShippingFeePerPerson(item.totalPoints);
+                const grandTotal = item.totalAmount + shippingFeeForClaimer;
+                const wxFee = calculateWxFee(grandTotal);
+                const wxTotal = calculateWxTotal(grandTotal);
+                
+                return {
+                    ...item,
+                    shippingFee: shippingFeeForClaimer,
+                    grandTotal: grandTotal,
+                    wxFee: wxFee,
+                    wxTotal: wxTotal
+                };
+            });
+            
+            // 按CN升序排序（默认）
+            kidneyData.sort((a, b) => a.cn.localeCompare(b.cn));
+            
+            // 保存原始数据用于筛选恢复
+            originalKidneyData = [...kidneyData];
+            
+            // 渲染肾表
+            renderKidneyTable();
+            
+            // 更新统计信息
+            updateKidneyStats();
+        }
+
+        function renderKidneyTable() {
+            const tableBody = document.getElementById('kidney-table-body');
+            tableBody.innerHTML = '';
+            
+            if (kidneyData.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td colspan="7" style="text-align: center; padding: 30px; color: #999;">
+                        暂无认领数据，请在编辑页面添加认领人
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+                return;
+            }
+            
+            kidneyData.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="col-cn">${item.cn}</td>
+                    <td class="col-total-amount">${item.totalAmount.toFixed(2)}</td>
+                    <td class="col-total-points">${item.totalPoints}</td>
+                    <td class="col-shipping-fee">${item.shippingFee.toFixed(2)}</td>
+                    <td class="col-grand-total">${item.grandTotal.toFixed(2)}</td>
+					<td class="col-wx-total">${item.wxTotal.toFixed(2)}</td>
+                    <td class="col-details">
+                        <button class="btn" style="padding: 4px 8px; font-size: 12px; background-color: #17a2b8; color:#ffffff;" onclick="showClaimerDetails('${item.cn}')">查看详情</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function updateKidneyStats() {
+            const totalClaimers = kidneyData.length;
+            const totalAmountAll = kidneyData.reduce((sum, item) => sum + item.totalAmount, 0);
+            const totalPointsAll = kidneyData.reduce((sum, item) => sum + item.totalPoints, 0);
+            const totalShippingAll = kidneyData.reduce((sum, item) => sum + item.shippingFee, 0);
+            const grandTotalAll = kidneyData.reduce((sum, item) => sum + item.grandTotal, 0);
+            
+            document.getElementById('claimerCount').textContent = totalClaimers;
+            document.getElementById('totalAmountAll').textContent = totalAmountAll.toFixed(2);
+            document.getElementById('totalPointsAll').textContent = totalPointsAll;
+            document.getElementById('totalShippingAll').textContent = totalShippingAll.toFixed(2);
+            document.getElementById('grandTotalAll').textContent = grandTotalAll.toFixed(2);
+            
+            // 显示统计信息
+            document.getElementById('kidneyStats').style.display = 'block';
+        }
+
+        function filterKidneyTable() {
+            const searchTerm = document.getElementById('kidneySearchInput').value.trim().toLowerCase();
+            
+            if (!searchTerm) {
+                // 如果没有搜索词，恢复原始数据
+                kidneyData = [...originalKidneyData];
+                renderKidneyTable();
+                updateKidneyStats();
+                return;
+            }
+            
+            // 过滤包含搜索词的CN
+            kidneyData = originalKidneyData.filter(item => 
+                item.cn.toLowerCase().includes(searchTerm)
+            );
+            
+            renderKidneyTable();
+            updateKidneyStats();
+        }
+
+        // 排序功能
+        function sortKidneyTable(sortBy) {
+            const btn = event.target;
+            const currentOrder = sortState[sortBy].order;
+            
+            // 切换排序顺序
+            const newOrder = currentOrder === 'desc' ? 'asc' : 'desc';
+            sortState[sortBy].order = newOrder;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.sort-btn').forEach(b => {
+                b.classList.remove('asc', 'desc');
+                if (b === btn) {
+                    b.classList.add(newOrder);
+                    b.textContent = `按${sortState[sortBy].name}排序`;
+                }
+            });
+            
+            // 执行排序
+            if (sortBy === 'cn') {
+                // CN按字母排序
+                kidneyData.sort((a, b) => {
+                    const nameA = a.cn.toUpperCase();
+                    const nameB = b.cn.toUpperCase();
+                    if (newOrder === 'desc') {
+                        return nameB.localeCompare(nameA);
+                    } else {
+                        return nameA.localeCompare(nameB);
+                    }
+                });
+            } else {
+                // 数字排序
+                kidneyData.sort((a, b) => {
+                    if (newOrder === 'desc') {
+                        return b[sortBy] - a[sortBy];
+                    } else {
+                        return a[sortBy] - b[sortBy];
+                    }
+                });
+            }
+            
+            renderKidneyTable();
+        }
+
+        // 导出所有肾表数据和个人结算单
+        function exportAllKidneyData() {
+            if (kidneyData.length === 0) {
+                alert('暂无肾表数据可导出！');
+                return;
+            }
+            
+            // 创建新的工作簿
+            const wb = XLSX.utils.book_new();
+            
+            // 1. 导出总肾表
+            exportMainKidneySheet(wb);
+            
+            // 2. 批量导出每个CN的个人结算单
+            kidneyData.forEach(item => {
+                exportIndividualClaimerSheet(wb, item.cn);
+            });
+            
+            // 3. 导出文件
+            const fileName = `肾表及个人结算单_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            alert(`导出完成！文件包含1个总表和${kidneyData.length}个个人结算单。`);
+        }
+
+        // 导出总肾表
+        function exportMainKidneySheet(wb) {
+            // 准备Excel数据
+            const wsData = kidneyData.map(item => [
+                item.cn,
+                item.totalAmount.toFixed(2),
+                item.totalPoints,
+                item.shippingFee.toFixed(2),
+                item.grandTotal.toFixed(2),
+                item.wxTotal.toFixed(2)
+            ]);
+            
+            // 添加表头
+            wsData.unshift(['CN', '认领谷子金额（元）', '认领点数', '均摊运费（元）', '总金额（谷子+运费）', 'wx支付总金额']);
+            
+            // 添加汇总行
+            const totalAmountAll = kidneyData.reduce((sum, item) => sum + item.totalAmount, 0);
+            const totalPointsAll = kidneyData.reduce((sum, item) => sum + item.totalPoints, 0);
+            const totalShippingAll = kidneyData.reduce((sum, item) => sum + item.shippingFee, 0);
+            const grandTotalAll = kidneyData.reduce((sum, item) => sum + item.grandTotal, 0);
+            const wxTotalAll = kidneyData.reduce((sum, item) => sum + item.wxTotal, 0);
+            
+            wsData.push(['汇总', totalAmountAll.toFixed(2), totalPointsAll, totalShippingAll.toFixed(2), grandTotalAll.toFixed(2), wxTotalAll.toFixed(2)]);
+            
+            // 创建Excel工作表
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            
+            // 设置列宽
+            const colWidths = [
+                {wch: 15},  // CN
+                {wch: 18},  // 认领谷子金额
+                {wch: 12},  // 认领点数
+                {wch: 15},  // 均摊运费
+                {wch: 20},  // 总金额
+                {wch: 18}   // wx支付总金额
+            ];
+            ws['!cols'] = colWidths;
+            
+            // 添加到工作簿
+            XLSX.utils.book_append_sheet(wb, ws, '肾表总表');
+        }
+
+        // 导出单个CN的个人结算单
+        function exportIndividualClaimerSheet(wb, cn) {
+            const claimerData = kidneyData.find(item => item.cn === cn);
+            if (!claimerData) return;
+            
+            // 准备Excel数据
+            const wsData = [];
+            
+            // 1. 标题行
+            wsData.push([`${cn} 的个人结算单`]);
+            wsData.push([]); // 空行
+            
+            // 2. 汇总信息
+            wsData.push(['CN：', cn]);
+            wsData.push(['排谷总金额：', `${claimerData.totalAmount.toFixed(2)} 元`]);
+            wsData.push(['排谷总点数：', `${claimerData.totalPoints} 点`]);
+            wsData.push(['均摊运费：', `${claimerData.shippingFee.toFixed(2)} 元`]);
+            wsData.push(['总金额（谷子本体+运费）：', `${claimerData.grandTotal.toFixed(2)} 元`]);
+            wsData.push(['wx手续费：', `${claimerData.wxFee.toFixed(2)} 元`]);
+            wsData.push(['wx支付总金额：', `${claimerData.wxTotal.toFixed(2)} 元`]);
+            wsData.push([]); // 空行
+            
+            // 3. 谷子详情表头
+            wsData.push([`${cn} 的排谷明细`]);
+            wsData.push(['品类', '单价（元）', '认领数量', '金额（元）']);
+            
+            // 4. 谷子详情
+            claimerData.details.forEach(item => {
+                wsData.push([
+                    item.category,
+                    item.price.toFixed(2),
+                    item.quantity,
+                    (item.price * item.quantity).toFixed(2)
+                ]);
+            });
+            
+            wsData.push([]); // 空行
+            
+            // 5. 汇总行
+            const totalQuantity = claimerData.details.reduce((sum, item) => sum + item.quantity, 0);
+            const totalCost = claimerData.details.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            wsData.push(['谷子总计', '', totalQuantity, totalCost.toFixed(2)]);
+            
+            // 6. 费用明细
+            wsData.push([]);
+            wsData.push(['费用明细', '', '', '']);
+            wsData.push(['谷子金额', '', '', totalCost.toFixed(2)]);
+            wsData.push(['均摊运费', '', '', claimerData.shippingFee.toFixed(2)]);
+            wsData.push(['小计（谷子+运费）', '', '', claimerData.grandTotal.toFixed(2)]);
+            wsData.push(['wx手续费', '', '', claimerData.wxFee.toFixed(2)]);
+            wsData.push(['wx支付总金额', '', '', claimerData.wxTotal.toFixed(2)]);
+            
+            // 7. 备注
+            wsData.push([]);
+            wsData.push(['备注：']);
+            wsData.push(['1. 运费按照点数均摊']);
+            wsData.push(['2. wx手续费按0.1%收取，不足100元收取0.1元']);
+            
+            // 创建Excel工作表
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            
+            // 设置列宽
+            const colWidths = [
+                {wch: 25},  // 品类
+                {wch: 12},  // 单价
+                {wch: 12},  // 数量
+                {wch: 12}   // 金额
+            ];
+            ws['!cols'] = colWidths;
+            
+            // 设置工作表名称（截断为31个字符，Excel限制）
+            let sheetName = cn;
+            if (sheetName.length > 31) {
+                sheetName = sheetName.substring(0, 31);
+            }
+            
+            // 添加到工作簿
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        }
+
+        // 导出单个CN的个人结算单（独立文件）
+        function exportIndividualClaimerFile(cn) {
+            const wb = XLSX.utils.book_new();
+            exportIndividualClaimerSheet(wb, cn);
+            const fileName = `${cn}_个人结算单_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        }
+
+        // ==================== 认领人详情弹窗功能 ====================
+        function showClaimerDetails(cn) {
+            // 设置当前认领人
+            currentClaimer = cn;
+            
+            // 查找该CN的统计数据
+            const claimerData = kidneyData.find(item => item.cn === cn);
+            
+            if (!claimerData) {
+                alert('未找到该CN的认领数据！');
+                return;
+            }
+            
+            // 保存认领人数据用于打印
+            currentClaimerData = claimerData;
+            
+            // 设置弹窗标题
+            document.getElementById('modal-title').textContent = `${cn} 的认领详情`;
+            
+            // 更新汇总信息（包含均摊运费、总金额和wx支付总金额）
+            const summaryHtml = `
+                <div class="info-item">
+                    <div class="info-label">认领人：</div>
+                    <div class="info-value">${cn}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">认领谷子金额：</div>
+                    <div class="info-value total-amount">${claimerData.totalAmount.toFixed(2)} 元</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">认领点数：</div>
+                    <div class="info-value total-points">${claimerData.totalPoints} 点</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">均摊运费：</div>
+                    <div class="info-value shipping-fee">${claimerData.shippingFee.toFixed(2)} 元</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">总金额（谷子+运费）：</div>
+                    <div class="info-value grand-total">${claimerData.grandTotal.toFixed(2)} 元</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">wx手续费：</div>
+                    <div class="info-value">${claimerData.wxFee.toFixed(2)} 元</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">wx支付总金额：</div>
+                    <div class="info-value wx-total">${claimerData.wxTotal.toFixed(2)} 元</div>
+                </div>
+            `;
+            
+            document.getElementById('claimer-summary').innerHTML = summaryHtml;
+            
+            // 更新详细谷子列表 - 使用用户端结算单样式
+            let detailsHtml = '<div class="summary-card">';
+            detailsHtml += `
+                <h3>${cn} 的认领统计</h3>
+                <div class="summary-header">
+                    <div class="img-col">图片</div>
+                    <div class="category-col">品类（单价）</div>
+                    <div class="quantity-col">认领数量</div>
+                    <div class="cost-col">金额</div>
+                </div>
+            `;
+            
+            // 计算总金额和总数量
+            let totalCost = 0;
+            let totalQuantity = 0;
+            
+            claimerData.details.forEach(item => {
+                totalCost += item.cost;
+                totalQuantity += item.quantity;
+                
+                detailsHtml += `
+                    <div class="summary-item">
+                        <div class="img-col">
+                            <img src="${item.imgSrc}" alt="${item.category}" onclick="openImgModal('${item.imgSrc}')">
+                        </div>
+                        <div class="category-col">${item.category}（¥${item.price.toFixed(2)}/个）</div>
+                        <div class="quantity-col">${item.quantity} 个</div>
+                        <div class="cost-col">¥${item.cost.toFixed(2)}</div>
+                    </div>
+                `;
+            });
+            
+            // 添加运费、总金额、手续费和wx支付总金额行
+            detailsHtml += `
+                <div class="summary-total">
+                    <div class="total-label">谷子总计</div>
+                    <div class="total-values">
+                        <div>总谷子个数：${totalQuantity} 个</div>
+                        <div>总金额：¥${totalCost.toFixed(2)}</div>
+                    </div>
+                </div>
+                
+                <div class="summary-total" style="background-color: #fff3cd; margin-top: 10px;">
+                    <div class="total-label">运费均摊</div>
+                    <div class="total-values">
+                        <div>均摊运费：¥${claimerData.shippingFee.toFixed(2)}</div>
+                    </div>
+                </div>
+                
+                <div class="summary-total" style="background-color: #e8f4f8; margin-top: 10px;">
+                    <div class="total-label">总金额（谷子+运费）</div>
+                    <div class="total-values">
+                        <div>总计：¥${claimerData.grandTotal.toFixed(2)}</div>
+                    </div>
+                </div>
+                
+                <div class="summary-total" style="background-color: #f8d7da; margin-top: 10px;">
+                    <div class="total-label">wx手续费</div>
+                    <div class="total-values">
+                        <div>手续费：¥${claimerData.wxFee.toFixed(2)}（${claimerData.grandTotal < 100 ? '不足100元，收取0.1元' : '0.1%手续费'}）</div>
+                    </div>
+                </div>
+                
+                <div class="summary-total" style="background-color: #d1e7dd; margin-top: 10px;">
+                    <div class="total-label">wx支付总金额</div>
+                    <div class="total-values">
+                        <div>总计：¥${claimerData.wxTotal.toFixed(2)}</div>
+                    </div>
+                </div>
+            `;
+            
+            detailsHtml += '</div>';
+            document.getElementById('claimer-details-content').innerHTML = detailsHtml;
+            
+            // 显示弹窗
+            document.getElementById('claimer-details-modal').style.display = 'flex';
+        }
+
+        function closeClaimerDetailsModal() {
+            document.getElementById('claimer-details-modal').style.display = 'none';
+        }
+
+        // 点击弹窗外部关闭
+        document.getElementById('claimer-details-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeClaimerDetailsModal();
+            }
+        });
+
+        // ==================== 其他功能 ====================
+        // 快速添加按钮（现在跳转到编辑页面）
+        function quickAddGuzi() {
+            switchPage('edit-page');
+            addNewEditRow();
+        }
+    </script>
+</body>
 </html>
